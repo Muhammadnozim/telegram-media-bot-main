@@ -3,3 +3,5 @@ yt-dlp
 aiohttp
 python-dotenv
 pydantic-settings
+sqlalchemy
+asyncpg
