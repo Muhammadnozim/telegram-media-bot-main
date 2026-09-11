@@ -4,4 +4,4 @@ aiohttp
 python-dotenv
 pydantic-settings
 sqlalchemy
-asyncpg
+aiosqlite
