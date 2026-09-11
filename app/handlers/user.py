@@ -92,12 +92,11 @@ async def handle_stats(event):
 
 # 5. ARTIST VA MUSIQA NOMI BO'YICHA QIDIRUV (Link bo'lmagan oddiy matnlar uchun)
 @user_router.message(F.text & ~F.text.startswith("http"))
-async def search_music_by_name(message: Message):
+async def search_music_by_name(message: Message, state: FSMContext):
     query = message.text.strip()
-    status_msg = await message.answer(f"🔍 <b>{query}</b> bo'yicha musiqa qidirilmoqda...")
+    status_msg = await message.answer(f"🔍 <b>{query}</b> bo'yicha musiqa qidirilmoqda...", parse_mode="HTML")
     
     try:
-        # YouTube orqali qidirish (ytsearch drayveri orqali)
         search_url = f"ytsearch1:{query}"
         info = await downloader.get_info_async(search_url)
         
@@ -105,11 +104,17 @@ async def search_music_by_name(message: Message):
             await status_msg.edit_text("❌ Hech narsa topilmadi.")
             return
 
+        # Qidiruv natijasida topilgan haqiqiy youtube linkini saqlaymiz:
+        actual_url = info.get("webpage_url") or info.get("url") or search_url
         title = info.get("title", query)
+
+        # FSM state ga URL va nomini saqlaymiz (Tugma bosilganda ishlashi uchun)
+        await state.update_data(url=actual_url, title=title)
+
         await status_msg.edit_text(
             f"🎵 Topildi: <b>{title}</b>\n\nYuklab olish formatini tanlang:",
             parse_mode="HTML",
-            reply_markup=get_format_kb(search_url)
+            reply_markup=get_format_kb(actual_url)
         )
     except Exception as e:
         await status_msg.edit_text(f"❌ Qidiruvda xatolik yuz berdi: {str(e)}")
